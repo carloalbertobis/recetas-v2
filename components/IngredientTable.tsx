@@ -21,18 +21,14 @@ export default function IngredientTable({
 }: IngredientTableProps) {
   return (
     <div>
-      <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="overflow-hidden rounded-xl border border-[#E8DCCB]">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-slate-100 text-left text-sm font-semibold text-slate-600">
-              <th className="px-4 py-3">
-                Ingrediente
-              </th>
-
+            <tr className="bg-[#F3EBDD] text-left text-sm font-semibold text-[#5C4935]">
+              <th className="px-4 py-3">Ingrediente</th>
               <th className="w-36 px-4 py-3 text-right">
                 % receta
               </th>
-
               <th className="w-12 px-2 py-3"></th>
             </tr>
           </thead>
@@ -41,7 +37,7 @@ export default function IngredientTable({
             {ingredients.map((ingredient) => (
               <tr
                 key={ingredient.id}
-                className="border-t border-slate-100 hover:bg-slate-50"
+                className="border-t border-[#EFE5D7] hover:bg-[#FCF9F4]"
               >
                 <td className="px-4 py-2">
                   <input
@@ -54,7 +50,7 @@ export default function IngredientTable({
                         event.target.value
                       )
                     }
-                    className="w-full rounded-lg border border-transparent bg-transparent px-2 py-2 outline-none focus:border-blue-300 focus:bg-white"
+                    className="w-full rounded-lg border border-transparent bg-transparent px-2 py-2 text-[#3F3428] outline-none focus:border-[#D9B27A] focus:bg-white"
                   />
                 </td>
 
@@ -75,7 +71,7 @@ export default function IngredientTable({
                         event.currentTarget.blur();
                       }
                     }}
-                    className="w-full rounded-lg border border-transparent bg-transparent px-2 py-2 text-right outline-none focus:border-blue-300 focus:bg-white"
+                    className="w-full rounded-lg border border-transparent bg-transparent px-2 py-2 text-right text-[#3F3428] outline-none focus:border-[#D9B27A] focus:bg-white"
                   />
                 </td>
 
@@ -85,7 +81,7 @@ export default function IngredientTable({
                     onClick={() =>
                       onRemove(ingredient.id)
                     }
-                    className="rounded-lg px-2 py-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                    className="rounded-lg px-2 py-1 text-[#A8947D] hover:bg-[#FDF0E5] hover:text-red-500"
                     title="Eliminar ingrediente"
                   >
                     ×
@@ -100,7 +96,7 @@ export default function IngredientTable({
       <button
         type="button"
         onClick={onAdd}
-        className="mt-3 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+        className="mt-3 rounded-lg border border-[#D9C8B3] bg-white px-4 py-2 text-sm font-semibold text-[#6B5843] transition hover:bg-[#F8F1E8]"
       >
         + Añadir ingrediente
       </button>

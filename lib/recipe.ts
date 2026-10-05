@@ -4,6 +4,23 @@ export type Ingredient = {
   percentage: number;
 };
 
+export type RecipeStep = {
+  id: string;
+  order: number;
+  title: string;
+  description: string;
+  duration: string;
+  temperature: string;
+};
+
+export type Recipe = {
+  id: string;
+  name: string;
+  description: string;
+  ingredients: Ingredient[];
+  steps: RecipeStep[];
+};
+
 export type RecipeResult = {
   ingredients: {
     id: string;

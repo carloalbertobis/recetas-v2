@@ -13,15 +13,15 @@ export default function MetricCard({
     <div
       className={`rounded-xl border p-5 ${
         highlight
-          ? "border-blue-200 bg-blue-50"
-          : "border-slate-200 bg-slate-50"
+          ? "border-[#E5C28F] bg-[#FDF4E7]"
+          : "border-[#E8DCCB] bg-[#FCFAF7]"
       }`}
     >
-      <div className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+      <div className="mb-2 text-xs font-bold uppercase tracking-wider text-[#806B53]">
         {label}
       </div>
 
-      <div className="text-2xl font-bold text-slate-800">
+      <div className="text-2xl font-bold text-[#3F3428]">
         {value}
       </div>
     </div>

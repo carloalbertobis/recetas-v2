@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { recipes } from "@/data/recipes/generated";
+
+import RecipeSteps from "./RecipeSteps";
 
 import {
   calculateRecipe,
@@ -14,39 +18,6 @@ import MetricCard from "./MetricCard";
 
 type CalculationMethod = "total" | "pieces";
 
-const initialIngredients: Ingredient[] = [
-  {
-    id: crypto.randomUUID(),
-    name: "Harina 0",
-    percentage: 50,
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Harina 00",
-    percentage: 50,
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Agua",
-    percentage: 30,
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Aceite",
-    percentage: 10,
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Azúcar",
-    percentage: 5,
-  },
-  {
-    id: crypto.randomUUID(),
-    name: "Sal",
-    percentage: 5,
-  },
-];
-
 function formatNumber(value: number) {
   return new Intl.NumberFormat("es-ES", {
     minimumFractionDigits: 2,
@@ -54,7 +25,20 @@ function formatNumber(value: number) {
   }).format(value);
 }
 
+function cloneIngredients(
+  ingredients: Ingredient[]
+): Ingredient[] {
+  return ingredients.map((ingredient) => ({
+    ...ingredient,
+  }));
+}
+
 export default function RecipeCalculator() {
+  const initialRecipe = recipes[0];
+
+  const [selectedRecipeId, setSelectedRecipeId] =
+    useState<string>(initialRecipe.id);
+
   const [method, setMethod] =
     useState<CalculationMethod>("total");
 
@@ -68,13 +52,50 @@ export default function RecipeCalculator() {
     useState<string>("1000");
 
   const [ingredients, setIngredients] =
-    useState<Ingredient[]>(initialIngredients);
+    useState<Ingredient[]>(
+      cloneIngredients(initialRecipe.ingredients)
+    );
 
   const [result, setResult] =
     useState<RecipeResult | null>(null);
 
   const [error, setError] =
     useState<string>("");
+
+  useEffect(() => {
+    const randomRecipe =
+      recipes[Math.floor(Math.random() * recipes.length)];
+
+    setSelectedRecipeId(randomRecipe.id);
+
+    setIngredients(
+      cloneIngredients(randomRecipe.ingredients)
+    );
+  }, []);
+
+  function clearResult() {
+    setResult(null);
+    setError("");
+  }
+
+  function changeRecipe(recipeId: string) {
+    const recipe = recipes.find(
+      (item) => item.id === recipeId
+    );
+
+    if (!recipe) {
+      return;
+    }
+
+    setSelectedRecipeId(recipe.id);
+
+    setIngredients(
+      cloneIngredients(recipe.ingredients)
+    );
+
+    setResult(null);
+    setError("");
+  }
 
   function updateIngredient(
     id: string,
@@ -106,6 +127,8 @@ export default function RecipeCalculator() {
         };
       })
     );
+
+    setResult(null);
   }
 
   function addIngredient() {
@@ -117,6 +140,8 @@ export default function RecipeCalculator() {
         percentage: 0,
       },
     ]);
+
+    setResult(null);
   }
 
   function removeIngredient(id: string) {
@@ -125,6 +150,8 @@ export default function RecipeCalculator() {
         (ingredient) => ingredient.id !== id
       )
     );
+
+    setResult(null);
   }
 
   function calculate() {
@@ -170,10 +197,15 @@ export default function RecipeCalculator() {
 
   const percentageSum = ingredients.reduce(
     (sum, ingredient) =>
-      sum + (Number.isFinite(ingredient.percentage)
+      sum +
+      (Number.isFinite(ingredient.percentage)
         ? ingredient.percentage
         : 0),
     0
+  );
+
+  const selectedRecipe = recipes.find(
+    (recipe) => recipe.id === selectedRecipeId
   );
 
   return (
@@ -181,25 +213,54 @@ export default function RecipeCalculator() {
 
       {/* CONFIGURACIÓN */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+
         <div className="mb-6">
           <h2 className="text-xl font-bold text-slate-800">
             Configuración de la receta
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Define la cantidad final que quieres obtener.
+            Selecciona una receta y define la cantidad
+            final que quieres obtener.
           </p>
         </div>
 
+        {/* RECETA */}
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Receta
+          </label>
+
+          <select
+            value={selectedRecipeId}
+            onChange={(event) =>
+              changeRecipe(event.target.value)
+            }
+            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base outline-none focus:border-[#C8842B] focus:ring-2 focus:ring-[#F3DDBD]"
+          >
+            {recipes.map((recipe) => (
+              <option
+                key={recipe.id}
+                value={recipe.id}
+              >
+                {recipe.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* MÉTODO */}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
 
           <button
             type="button"
-            onClick={() => setMethod("total")}
+            onClick={() => {
+              setMethod("total");
+              clearResult();
+            }}
             className={`rounded-xl border p-4 text-left transition ${
               method === "total"
-                ? "border-blue-500 bg-blue-50"
+                ? "border-[#C8842B] bg-[#FDF4E7]"
                 : "border-slate-200 bg-white hover:bg-slate-50"
             }`}
           >
@@ -215,10 +276,13 @@ export default function RecipeCalculator() {
 
           <button
             type="button"
-            onClick={() => setMethod("pieces")}
+            onClick={() => {
+              setMethod("pieces");
+              clearResult();
+            }}
             className={`rounded-xl border p-4 text-left transition ${
               method === "pieces"
-                ? "border-blue-500 bg-blue-50"
+                ? "border-[#C8842B] bg-[#FDF4E7]"
                 : "border-slate-200 bg-white hover:bg-slate-50"
             }`}
           >
@@ -248,15 +312,16 @@ export default function RecipeCalculator() {
                 min="0"
                 step="0.01"
                 value={requestedMass}
-                onChange={(event) =>
-                  setRequestedMass(event.target.value)
-                }
+                onChange={(event) => {
+                  setRequestedMass(event.target.value);
+                  clearResult();
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.currentTarget.blur();
                   }
                 }}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg outline-none focus:border-[#C8842B] focus:ring-2 focus:ring-[#F3DDBD]"
               />
             </div>
           ) : (
@@ -271,17 +336,16 @@ export default function RecipeCalculator() {
                   min="1"
                   step="1"
                   value={numberOfPieces}
-                  onChange={(event) =>
-                    setNumberOfPieces(
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => {
+                    setNumberOfPieces(event.target.value);
+                    clearResult();
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.currentTarget.blur();
                     }
                   }}
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg outline-none focus:border-[#C8842B] focus:ring-2 focus:ring-[#F3DDBD]"
                 />
               </div>
 
@@ -295,17 +359,16 @@ export default function RecipeCalculator() {
                   min="0"
                   step="0.01"
                   value={pieceWeight}
-                  onChange={(event) =>
-                    setPieceWeight(
-                      event.target.value
-                    )
-                  }
+                  onChange={(event) => {
+                    setPieceWeight(event.target.value);
+                    clearResult();
+                  }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.currentTarget.blur();
                     }
                   }}
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg outline-none focus:border-[#C8842B] focus:ring-2 focus:ring-[#F3DDBD]"
                 />
               </div>
             </>
@@ -325,7 +388,8 @@ export default function RecipeCalculator() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Introduce los porcentajes de la receta.
+              Puedes modificar los ingredientes y sus
+              porcentajes antes de calcular.
             </p>
           </div>
 
@@ -350,7 +414,7 @@ export default function RecipeCalculator() {
         <button
           type="button"
           onClick={calculate}
-          className="w-full rounded-xl bg-blue-600 px-6 py-4 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99]"
+          className="w-full rounded-xl bg-[#C8842B] px-6 py-4 text-base font-bold text-white shadow-sm transition hover:bg-[#A96820] active:scale-[0.99]"
         >
           CALCULAR RECETA
         </button>
@@ -412,10 +476,17 @@ export default function RecipeCalculator() {
 
           </div>
 
-          {/* TABLA */}
+          {/* TABLA DE RESULTADOS */}
           <ResultTable
             ingredients={result.ingredients}
           />
+
+          {/* PROCESO DE ELABORACIÓN */}
+          {selectedRecipe?.steps && (
+            <RecipeSteps
+              steps={selectedRecipe.steps}
+            />
+          )}
 
         </section>
       )}
